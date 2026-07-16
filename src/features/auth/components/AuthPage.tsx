@@ -54,9 +54,9 @@ export function AuthPage({ mode }: AuthPageProps) {
           <p className="mt-2 text-sm text-muted">Continue with your email address or Google.</p>
         </div>
         {mode === 'sign-in' ? (
-          <SignIn routing="hash" signUpUrl="/sign-up" fallbackRedirectUrl="/" appearance={clerkAppearance} />
+          <SignIn routing="hash" signUpUrl="/sign-up" forceRedirectUrl="/" fallbackRedirectUrl="/" appearance={clerkAppearance} />
         ) : (
-          <SignUp routing="hash" signInUrl="/sign-in" fallbackRedirectUrl="/" appearance={clerkAppearance} />
+          <SignUp routing="hash" signInUrl="/sign-in" forceRedirectUrl="/" fallbackRedirectUrl="/" appearance={clerkAppearance} />
         )}
       </div>
     </main>

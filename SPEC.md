@@ -170,6 +170,13 @@ Jede Phase endet mit statischer Prüfung, automatisierten Tests, Produktions-Bui
 - Komponenten- und Persistenztests, statische Prüfung und Produktions-Build bestehen.
 - Manuelle Browserprüfung bestätigt Auth-Gates, Kontoaktionen und responsive Darstellung ohne App-Konsolenfehler.
 
+### Produktpflege nach Phase 7
+
+- Die sichtbaren Sidebar-Einträge Sounds und Settings führen auf funktionsfähige geschützte Routen.
+- Die Audio-Steuerung bleibt beim Wechsel zwischen Focus, Sounds, Insights und Settings gemountet.
+- Settings stellt das Clerk-Nutzerprofil mit Konto- und Sicherheitsfunktionen bereit.
+- Auth-Routen leiten bereits angemeldete Nutzer eindeutig zur geschützten App zurück.
+
 ### Phase 7
 
 - Nur vollständig bis `00:00` gelaufene Timer erzeugen genau einen Eintrag im Sitzungsverlauf.
