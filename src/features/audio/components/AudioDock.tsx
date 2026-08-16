@@ -3,14 +3,13 @@ import {
   Pause,
   Play,
   SlidersHorizontal,
-  Volume1,
-  Volume2,
 } from 'lucide-react'
 import { useState } from 'react'
 import { IconButton } from '../../../components/atoms/IconButton'
 import type { AmbientAudioEngine } from '../lib/AmbientAudioEngine'
 import { useAmbientAudio } from '../hooks/useAmbientAudio'
 import { soundscapes } from '../model/soundscapes'
+import { VolumeControl } from './molecules/VolumeControl'
 
 type AudioDockProps = {
   engineFactory?: () => AmbientAudioEngine
@@ -20,7 +19,6 @@ export function AudioDock({ engineFactory }: AudioDockProps) {
   const audio = useAmbientAudio(engineFactory)
   const [isExpanded, setIsExpanded] = useState(false)
   const ActiveIcon = audio.soundscape.icon
-  const VolumeIcon = audio.volume === 0 ? Volume1 : Volume2
 
   return (
     <aside
@@ -81,15 +79,12 @@ export function AudioDock({ engineFactory }: AudioDockProps) {
           </p>
         </div>
 
-        <VolumeIcon className="hidden shrink-0 text-muted sm:block" size={17} />
-        <input
-          aria-label="Ambient volume"
-          type="range"
-          min="0"
-          max="100"
-          value={Math.round(audio.volume * 100)}
-          onChange={(event) => audio.setVolume(Number(event.target.value) / 100)}
-          className="hidden w-24 accent-[var(--color-accent)] sm:block"
+        <VolumeControl
+          label="Ambient volume"
+          volume={audio.volume}
+          onChange={audio.setVolume}
+          className="hidden sm:flex"
+          sliderClassName="w-24"
         />
 
         <IconButton
@@ -102,20 +97,13 @@ export function AudioDock({ engineFactory }: AudioDockProps) {
       </div>
 
       <div className="border-t border-line px-4 py-3 sm:hidden">
-        <label className="flex items-center gap-3 text-xs text-muted">
-          <VolumeIcon size={16} />
-          <span className="sr-only">Ambient volume</span>
-          <input
-            aria-label="Ambient volume mobile"
-            type="range"
-            min="0"
-            max="100"
-            value={Math.round(audio.volume * 100)}
-            onChange={(event) => audio.setVolume(Number(event.target.value) / 100)}
-            className="w-full accent-[var(--color-accent)]"
-          />
-          <span className="w-8 text-right tabular-nums">{Math.round(audio.volume * 100)}%</span>
-        </label>
+        <VolumeControl
+          label="Ambient volume mobile"
+          volume={audio.volume}
+          onChange={audio.setVolume}
+          className="flex"
+          showValue
+        />
       </div>
     </aside>
   )

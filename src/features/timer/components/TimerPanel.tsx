@@ -1,14 +1,12 @@
-import { Pause, Play, RotateCcw } from 'lucide-react'
 import { useState } from 'react'
 import { useCompletedSessionRecorder } from '../../sessions/hooks/useCompletedSessionRecorder'
-import { Button } from '../../../components/atoms/Button'
-import { IconButton } from '../../../components/atoms/IconButton'
 import { useCustomTimers } from '../hooks/useCustomTimers'
 import { useTimer, type TimerStatus } from '../hooks/useTimer'
 import type { CustomTimerInput } from '../model/customTimerSchema'
 import { formatTime } from '../utils/formatTime'
 import { CustomTimerDialog } from './CustomTimerDialog'
 import { CustomTimerShelf } from './CustomTimerShelf'
+import { TimerControls } from './molecules/TimerControls'
 import { PresetSelector } from './PresetSelector'
 
 const statusLabels: Record<TimerStatus, string> = {
@@ -38,7 +36,6 @@ export function TimerPanel({ storageOwnerId, onSessionComplete }: TimerPanelProp
   )
   const elapsedRatio = 1 - timer.remainingSeconds / timer.durationSeconds
   const progressOffset = Math.min(100, Math.max(0, elapsedRatio * 100))
-  const isRunning = timer.status === 'running'
   const canReset =
     timer.status !== 'idle' ||
     timer.remainingSeconds !== timer.durationSeconds
@@ -105,19 +102,13 @@ export function TimerPanel({ storageOwnerId, onSessionComplete }: TimerPanelProp
         </div>
 
         <h1 id="focus-heading" className="sr-only">Focus timer</h1>
-        <div className="mt-8 flex items-center gap-3">
-          <IconButton label="Reset timer" disabled={!canReset} onClick={timer.reset}>
-            <RotateCcw size={17} />
-          </IconButton>
-          <Button
-            className="min-w-36"
-            onClick={isRunning ? timer.pause : timer.start}
-            disabled={timer.status === 'completed'}
-          >
-            {isRunning ? <Pause size={17} fill="currentColor" /> : <Play size={17} fill="currentColor" />}
-            {isRunning ? 'Pause' : timer.status === 'paused' ? 'Resume' : 'Start focus'}
-          </Button>
-        </div>
+        <TimerControls
+          status={timer.status}
+          canReset={canReset}
+          onStart={timer.start}
+          onPause={timer.pause}
+          onReset={timer.reset}
+        />
       </section>
 
       {isDialogOpen && (

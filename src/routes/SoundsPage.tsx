@@ -1,5 +1,5 @@
-import { Music2 } from 'lucide-react'
 import { soundscapes } from '../features/audio/model/soundscapes'
+import { SoundscapeCard } from '../features/audio/components/molecules/SoundscapeCard'
 
 export function SoundsPage() {
   return (
@@ -9,17 +9,9 @@ export function SoundsPage() {
       <p className="mt-3 max-w-xl text-sm leading-6 text-muted">Use the persistent audio bar below to play, pause, switch sounds and adjust the volume.</p>
 
       <section aria-label="Available ambient sounds" className="mt-10 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        {soundscapes.map((soundscape) => {
-          const Icon = soundscape.icon ?? Music2
-          return (
-            <article key={soundscape.id} className="rounded-2xl border border-line bg-elevated/65 p-5">
-              <div className="grid size-10 place-items-center rounded-xl bg-accent/10 text-accent"><Icon size={19} /></div>
-              <h2 className="mt-5 text-sm font-medium text-ink">{soundscape.label}</h2>
-              <p className="mt-2 text-xs leading-5 text-muted">{soundscape.description}</p>
-              <p className="mt-4 text-[0.68rem] font-medium text-muted uppercase tracking-wider">{soundscape.source === 'file' ? 'Audio file' : 'Generated locally'}</p>
-            </article>
-          )
-        })}
+        {soundscapes.map((soundscape) => (
+          <SoundscapeCard key={soundscape.id} soundscape={soundscape} />
+        ))}
       </section>
     </main>
   )

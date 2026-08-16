@@ -1,10 +1,12 @@
 import { Outlet, createRootRoute, createRoute, createRouter } from '@tanstack/react-router'
 import { AppShell } from '../../components/templates/AppShell'
 import { AuthRoute } from '../../features/auth/components/AuthRoute'
-import { ProtectedFocusRoute } from '../../features/auth/components/ProtectedFocusRoute'
-import { ProtectedInsightsRoute } from '../../features/auth/components/ProtectedInsightsRoute'
-import { ProtectedSettingsRoute } from '../../features/auth/components/ProtectedSettingsRoute'
-import { ProtectedSoundsRoute } from '../../features/auth/components/ProtectedSoundsRoute'
+import {
+  FocusRoute,
+  InsightsRoute,
+  SettingsRoute,
+  SoundsRoute,
+} from '../../features/auth/components/ProtectedPages'
 
 const rootRoute = createRootRoute({
   component: () => (
@@ -17,25 +19,25 @@ const rootRoute = createRootRoute({
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
-  component: ProtectedFocusRoute,
+  component: FocusRoute,
 })
 
 const soundsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/sounds',
-  component: ProtectedSoundsRoute,
+  component: SoundsRoute,
 })
 
 const insightsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/insights',
-  component: ProtectedInsightsRoute,
+  component: InsightsRoute,
 })
 
 const settingsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/settings',
-  component: ProtectedSettingsRoute,
+  component: SettingsRoute,
 })
 
 const signInRoute = createRoute({

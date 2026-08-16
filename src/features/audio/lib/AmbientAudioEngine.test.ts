@@ -1,4 +1,4 @@
-import { Music2 } from 'lucide-react'
+import { Waves } from 'lucide-react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { Soundscape } from '../model/soundscapes'
 import { WebAmbientAudioEngine } from './AmbientAudioEngine'
@@ -24,12 +24,11 @@ const externalSoundscape: Soundscape = {
   id: 'ocean-waves',
   label: 'Ocean waves',
   description: 'Calming shoreline',
-  source: 'file',
   audioUrl: '/audio/ocean-waves.mp3',
-  icon: Music2,
+  icon: Waves,
 }
 
-describe('WebAmbientAudioEngine external files', () => {
+describe('WebAmbientAudioEngine', () => {
   afterEach(() => {
     FakeAudio.instances = []
     vi.unstubAllGlobals()

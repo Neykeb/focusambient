@@ -50,19 +50,19 @@ describe('useAmbientAudio', () => {
     act(() => {
       result.current.setVolume(0.72)
     })
-    await act(() => result.current.selectSoundscape('cafe'))
+    await act(() => result.current.selectSoundscape('fire'))
 
     await waitFor(() => {
       expect(
         window.localStorage.getItem(AUDIO_PREFERENCES_STORAGE_KEY),
-      ).toContain('cafe')
+      ).toContain('fire')
     })
 
     expect(
       JSON.parse(
         window.localStorage.getItem(AUDIO_PREFERENCES_STORAGE_KEY) ?? '{}',
       ),
-    ).toEqual({ soundscapeId: 'cafe', volume: 0.72 })
+    ).toEqual({ soundscapeId: 'fire', volume: 0.72 })
   })
 
   it('falls back when stored preferences are invalid', () => {

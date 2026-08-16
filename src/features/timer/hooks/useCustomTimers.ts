@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { storedCustomTimersSchema, type CustomTimerInput } from '../model/customTimerSchema'
 import type { TimerPreset } from '../model/presets'
 
@@ -34,7 +34,7 @@ export function useCustomTimers(storageOwnerId: string) {
     window.localStorage.setItem(storageKey, JSON.stringify(customTimers))
   }, [customTimers, storageKey])
 
-  const addCustomTimer = useCallback((input: CustomTimerInput) => {
+  const addCustomTimer = (input: CustomTimerInput) => {
     const timer: TimerPreset = {
       id: createTimerId(),
       label: input.name,
@@ -44,13 +44,13 @@ export function useCustomTimers(storageOwnerId: string) {
 
     setCustomTimers((current) => [...current, timer])
     return timer
-  }, [])
+  }
 
-  const removeCustomTimer = useCallback((timerId: string) => {
+  const removeCustomTimer = (timerId: string) => {
     setCustomTimers((current) =>
       current.filter((timer) => timer.id !== timerId),
     )
-  }, [])
+  }
 
   return { customTimers, addCustomTimer, removeCustomTimer }
 }

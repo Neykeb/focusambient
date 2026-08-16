@@ -21,5 +21,6 @@ export const storedCustomTimerSchema = z.object({
 })
 
 export const storedCustomTimersSchema = z.array(storedCustomTimerSchema)
+//z.infer liest diese Regel und baut daraus den passenden TypeScript-Typ.
 
 export type CustomTimerInput = z.infer<typeof customTimerInputSchema>

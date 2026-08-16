@@ -1,13 +1,13 @@
 # FocusAmbient
 
-FocusAmbient ist eine ruhige, responsive Fokus-Webanwendung mit präzisem Timer, lokal erzeugten Umgebungsgeräuschen, Clerk-Authentifizierung und persönlichem Sitzungsverlauf.
+FocusAmbient ist eine ruhige, responsive Fokus-Webanwendung mit präzisem Timer, lokalen Umgebungsgeräuschen, Clerk-Authentifizierung und persönlichem Sitzungsverlauf.
 
 ## Funktionen
 
 - Pomodoro, Deep Focus und kurze Pausen
 - Eigene Timer von 1 bis 240 Minuten
 - Präzise Zeitberechnung über absolute Endzeitpunkte
-- Lokal erzeugte Klangwelten: Regen, Wald und Café
+- Lokale Klangwelten: Regen, Wald und Feuer
 - Anmeldung und Registrierung per E-Mail oder Google mit Clerk
 - Geschützte Focus- und Insights-Routen
 - Nutzerbezogene eigene Timer und abgeschlossene Sitzungen
@@ -17,7 +17,7 @@ FocusAmbient ist eine ruhige, responsive Fokus-Webanwendung mit präzisem Timer,
 ## Technischer Stack
 
 - Vite, React und TypeScript
-- TanStack Router und TanStack Query
+- TanStack Router
 - Clerk
 - Tailwind CSS
 - Zod
@@ -43,23 +43,25 @@ Im Clerk-Dashboard müssen nur E-Mail-Adresse und Google als Anmeldestrategien a
 
 Ohne Clerk-Schlüssel startet die Anwendung als klar gekennzeichnete lokale Vorschau.
 
-## Eigene Audiodateien
+## Audiodateien
 
-1. Lege eine MP3-, OGG- oder WebM-Datei unter `public/audio/` ab.
-2. Öffne `src/features/audio/model/externalSoundscapes.ts`.
-3. Ergänze einen eindeutigen Eintrag:
+Die drei Klangwelten verwenden MP3-Dateien unter `public/audio/`. Ihre Namen,
+Beschreibungen und Dateipfade stehen in `src/features/audio/model/soundscapes.ts`.
+Ein Eintrag besitzt diese Form:
 
 ```ts
 {
-  id: 'ocean-waves',
-  label: 'Ocean waves',
-  description: 'A slow and calming shoreline',
-  source: 'file',
-  audioUrl: '/audio/ocean-waves.mp3',
+  id: 'rain',
+  label: 'Gentle rain',
+  description: 'Soft, steady rainfall',
+  audioUrl: '/audio/rain.mp3',
+  icon: CloudRain,
 }
 ```
 
-Der Sound erscheint danach automatisch in der Audioauswahl, wird geloopt und verwendet die vorhandene Lautstärkeregelung. Verwende nur Dateien, für die du die nötigen Rechte besitzt. Große Dateien sollten vor dem Commit komprimiert werden.
+Die Dateien werden beim Abspielen wiederholt und verwenden die vorhandene
+Lautstärkeregelung. Verwende nur Dateien, für die du die nötigen Rechte besitzt.
+Quellen, Autoren und Lizenz sind in public/audio/README.md dokumentiert.
 
 ## Qualitätsprüfungen
 
@@ -91,6 +93,7 @@ Eigene Timer, Audioeinstellungen und Sitzungsverlauf werden aktuell versioniert 
 
 - [`SPEC.md`](./SPEC.md): verbindlicher Funktionsumfang und Abnahmekriterien
 - [`AGENTS.md`](./AGENTS.md): Arbeits- und Qualitätsregeln für Entwickler und KI-Agenten
+- [`audit.md`](./audit.md): geprüfter Projektstand, Einschränkungen und offene Aufgaben
 
 ## Veröffentlichung
 

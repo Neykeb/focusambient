@@ -1,75 +1,37 @@
-import { Coffee, CloudRain, Music2, Trees, type LucideIcon } from 'lucide-react'
-import { externalSoundscapes } from './externalSoundscapes'
+import { CloudRain, Flame, Trees, type LucideIcon } from 'lucide-react'
 
-export type GeneratedSoundscape = {
+export type Soundscape = {
   id: string
   label: string
   description: string
-  source: 'generated'
-  filterType: BiquadFilterType
-  filterFrequency: number
-  noise: 'white' | 'brown'
-  icon: LucideIcon
-}
-
-export type ExternalSoundscape = {
-  id: string
-  label: string
-  description: string
-  source: 'file'
   audioUrl: string
-  icon?: LucideIcon
-}
-
-type ResolvedExternalSoundscape = Omit<ExternalSoundscape, 'icon'> & {
   icon: LucideIcon
 }
 
-export type Soundscape = GeneratedSoundscape | ResolvedExternalSoundscape
 export type SoundscapeId = Soundscape['id']
 
-const generatedSoundscapes: readonly GeneratedSoundscape[] = [
+export const soundscapes: readonly Soundscape[] = [
   {
     id: 'rain',
     label: 'Gentle rain',
     description: 'Soft, steady rainfall',
-    source: 'generated',
-    filterType: 'highpass',
-    filterFrequency: 620,
-    noise: 'white',
+    audioUrl: '/audio/liecio-calming-rain-257596.mp3',
     icon: CloudRain,
   },
   {
     id: 'forest',
     label: 'Quiet forest',
-    description: 'Low, calming nature hush',
-    source: 'generated',
-    filterType: 'lowpass',
-    filterFrequency: 950,
-    noise: 'brown',
+    description: 'Calm sounds from nature',
+    audioUrl: '/audio/soundreality-nature-forest-sound-537925.mp3',
     icon: Trees,
   },
   {
-    id: 'cafe',
-    label: 'Distant café',
-    description: 'Warm background murmur',
-    source: 'generated',
-    filterType: 'bandpass',
-    filterFrequency: 480,
-    noise: 'brown',
-    icon: Coffee,
+    id: 'fire',
+    label: 'Crackling fire',
+    description: 'A warm and calming fireplace',
+    audioUrl: '/audio/universfield-crackling-fire-229156.mp3',
+    icon: Flame,
   },
-]
-
-const resolvedExternalSoundscapes: readonly ResolvedExternalSoundscape[] =
-  externalSoundscapes.map((soundscape) => ({
-    ...soundscape,
-    icon: soundscape.icon ?? Music2,
-  }))
-
-export const soundscapes: readonly Soundscape[] = [
-  ...generatedSoundscapes,
-  ...resolvedExternalSoundscapes,
 ]
 
 export const defaultSoundscape = soundscapes[0]
