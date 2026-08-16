@@ -2,12 +2,19 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>focusambient</title>
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      const redirectPath = new URLSearchParams(window.location.search).get('redirect')
+
+      if (redirectPath) {
+        window.history.replaceState(null, '', `%BASE_URL%${redirectPath.replace(/^\//, '')}`)
+      }
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

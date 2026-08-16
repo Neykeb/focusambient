@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FocusAmbient</title>
+  </head>
+  <body>
+    <script>
+      const basePath = '/focusambient/'
+      const routePath = window.location.pathname.slice(basePath.length - 1)
+      const fullRoute = `${routePath}${window.location.search}${window.location.hash}`
+
+      window.location.replace(`${basePath}?redirect=${encodeURIComponent(fullRoute)}`)
+    </script>
+  </body>
+</html>

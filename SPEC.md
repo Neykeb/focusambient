@@ -110,7 +110,14 @@ Bereits vereinfacht:
 - künstliche Web-Audio-Erzeugung durch lokale MP3-Dateien ersetzt
 - fremde Bestellcode-Dokumentation entfernt
 
-## 8. Abnahmekriterien
+## 8. Veröffentlichung
+
+- GitHub Pages veröffentlicht nur den fertigen Produktions-Build aus `dist`.
+- Der Build verwendet den Repository-Pfad `/focusambient/`.
+- GitHub Actions baut und veröffentlicht die App nach Änderungen auf `main`.
+- Direkte Seitenaufrufe werden auf die React-App zurückgeführt.
+
+## 9. Abnahmekriterien
 
 Vor der endgültigen Abnahme:
 
@@ -122,6 +129,7 @@ Vor der endgültigen Abnahme:
 - die Browser-Konsole zeigt keine Fehler aus der App.
 - Quellen und Lizenzen der MP3-Dateien sind dokumentiert.
 - npm run check besteht vollständig.
+- der GitHub-Pages-Build verwendet gültige Router-, Audio- und Datei-Pfade.
 - das Audit beschreibt den endgültigen Stand.
 
 Größere neue Funktionen beginnen erst nach einer bewussten Entscheidung.

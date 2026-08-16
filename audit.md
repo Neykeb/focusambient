@@ -6,7 +6,7 @@ Dieses Audit beschreibt den aktuellen Stand von FocusAmbient. Es hält fest,
 welche Funktionen vorhanden sind, welche Technik wirklich verwendet wird,
 welche Prüfungen bestanden wurden und welche Aufgaben noch offen sind.
 
-Stand: 10. August 2026
+Stand: 16. August 2026
 
 ## Ergebnis
 
@@ -104,6 +104,15 @@ Bestanden in der lokalen Vorschau:
 
 - Klangqualität und Loop-Übergänge der MP3-Dateien mit Kopfhörern anhören
 - Clerk vor einer Veröffentlichung mit Produktionsschlüsseln konfigurieren
+- in den GitHub-Pages-Einstellungen einmalig `GitHub Actions` als Quelle wählen
+
+## GitHub Pages
+
+- Vite baut die App für den Repository-Pfad `/focusambient/`.
+- TanStack Router verwendet denselben Basispfad.
+- lokale Audiodateien und das Favicon verwenden den Vite-Basispfad.
+- direkte Seitenaufrufe werden über `404.html` zurück zur App geleitet.
+- `.github/workflows/deploy.yml` prüft, baut und veröffentlicht `dist`.
 
 ## Abschlussentscheidungen
 

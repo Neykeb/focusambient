@@ -10,26 +10,28 @@ export type Soundscape = {
 
 export type SoundscapeId = Soundscape['id']
 
+const audioFolder = `${import.meta.env.BASE_URL}audio/`
+
 export const soundscapes: readonly Soundscape[] = [
   {
     id: 'rain',
     label: 'Gentle rain',
     description: 'Soft, steady rainfall',
-    audioUrl: '/audio/liecio-calming-rain-257596.mp3',
+    audioUrl: `${audioFolder}liecio-calming-rain-257596.mp3`,
     icon: CloudRain,
   },
   {
     id: 'forest',
     label: 'Quiet forest',
     description: 'Calm sounds from nature',
-    audioUrl: '/audio/soundreality-nature-forest-sound-537925.mp3',
+    audioUrl: `${audioFolder}soundreality-nature-forest-sound-537925.mp3`,
     icon: Trees,
   },
   {
     id: 'fire',
     label: 'Crackling fire',
     description: 'A warm and calming fireplace',
-    audioUrl: '/audio/universfield-crackling-fire-229156.mp3',
+    audioUrl: `${audioFolder}universfield-crackling-fire-229156.mp3`,
     icon: Flame,
   },
 ]

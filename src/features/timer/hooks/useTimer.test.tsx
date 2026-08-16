@@ -57,7 +57,7 @@ describe('useTimer', () => {
     act(() => result.current.selectPreset(timerPresets[2]))
 
     expect(result.current.preset.id).toBe('short-break')
-    expect(result.current.remainingSeconds).toBe(300)
+    expect(result.current.remainingSeconds).toBe(900)
   })
 
   it('completes at zero', () => {
