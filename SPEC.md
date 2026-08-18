@@ -30,7 +30,7 @@ Funktionen werden zuerst hier ergänzt.
 
 - Anmeldung und Registrierung mit Clerk
 - geschützte Seiten für Focus, Sounds, Insights und Settings
-- eigene Timer und Sitzungen werden nach Clerk-Nutzer-ID getrennt
+- eigene Timer, Sitzungen und Gedanken werden nach Clerk-Nutzer-ID getrennt
 - Speicherung erfolgt aktuell im Browser mit localStorage
 - gespeicherte Daten werden mit Zod geprüft
 
@@ -40,6 +40,15 @@ Funktionen werden zuerst hier ergänzt.
 - ein Eintrag enthält Timername, Dauer und Abschlusszeit
 - höchstens 100 Einträge werden gespeichert
 - der Verlauf kann auf der Insights-Seite gelöscht werden
+
+### Gedankenablage
+
+- während einer Fokus-Sitzung können kurze Gedanken notiert werden
+- offene Gedanken bleiben direkt beim Timer sichtbar
+- ein neuer Gedanke erscheint mit einem kurzen, ruhigen Effekt
+- jeder Gedanke speichert Text, Zeitpunkt und den gewählten Timer
+- Gedanken können erledigt und gelöscht werden
+- alle Gedanken sind zusätzlich auf der Insights-Seite erreichbar
 
 ## 3. Design und Bedienung
 
@@ -71,7 +80,7 @@ src enthält:
 
 - app: Provider und Router
 - components: allgemeine UI-Bausteine nach Atomic Design
-- features: Timer, Audio, Anmeldung und Sitzungen
+- features: Timer, Audio, Anmeldung, Sitzungen und Gedanken
 - routes: Seiten der App
 - test: gemeinsame Testvorbereitung
 
@@ -121,7 +130,7 @@ Bereits vereinfacht:
 
 Vor der endgültigen Abnahme:
 
-- Timer, eigene Timer, Audio, Anmeldung und Sitzungsverlauf funktionieren.
+- Timer, eigene Timer, Audio, Anmeldung, Sitzungsverlauf und Gedankenablage funktionieren.
 - gespeicherte Daten bleiben nach einem Neuladen erhalten.
 - beschädigte Daten führen nicht zu einem Absturz.
 - Desktop und kleine Mobilbreite funktionieren ohne horizontalen Überlauf.

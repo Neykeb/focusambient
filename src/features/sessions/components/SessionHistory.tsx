@@ -1,10 +1,12 @@
 import { Trash2 } from 'lucide-react'
+import type { ReactNode } from 'react'
 import { Button } from '../../../components/atoms/Button'
 import type { FocusSession } from '../model/focusSessionSchema'
 
 type SessionHistoryProps = {
   sessions: FocusSession[]
   onClear: () => void
+  children?: ReactNode
 }
 
 function formatDuration(durationSeconds: number) {
@@ -18,7 +20,7 @@ function formatCompletedAt(completedAt: string) {
   }).format(new Date(completedAt))
 }
 
-export function SessionHistory({ sessions, onClear }: SessionHistoryProps) {
+export function SessionHistory({ sessions, onClear, children }: SessionHistoryProps) {
   const totalMinutes = Math.round(
     sessions.reduce((total, session) => total + session.durationSeconds, 0) / 60,
   )
@@ -38,6 +40,8 @@ export function SessionHistory({ sessions, onClear }: SessionHistoryProps) {
           </Button>
         )}
       </div>
+
+      {children}
 
       <section aria-label="Focus summary" className="mt-10 grid gap-3 sm:grid-cols-2">
         <div className="rounded-2xl border border-line bg-elevated/65 p-5">

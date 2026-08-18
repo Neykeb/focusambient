@@ -35,6 +35,13 @@ geeignet.
 - Anzeige und Löschen des Sitzungsverlaufs
 - lokale Vorschau ohne Clerk-Schlüssel
 
+### Gedankenablage
+
+- kurze Gedanken während einer Fokus-Sitzung speichern
+- offene Gedanken direkt unter dem Timer sehen
+- Gedanken als erledigt markieren oder löschen
+- alle gespeicherten Gedanken auf der Insights-Seite öffnen
+
 ## Verwendete Technik
 
 - Vite
@@ -144,6 +151,7 @@ src/
     audio/              Audioanzeige, Hook, Engine und Daten
     auth/               Anmeldung und Routenschutz
     sessions/           Sitzungsverlauf
+    thoughts/           Gedankenablage und lokale Speicherung
     timer/              Timer, eigene Timer und Formulare
 
   routes/               Seiten der App
@@ -178,6 +186,7 @@ Gespeichert werden:
 - eigene Timer
 - ausgewähltes Geräusch und Lautstärke
 - vollständig abgeschlossene Fokus-Sitzungen
+- Gedanken aus der Gedankenablage
 
 Eigene Timer und Sitzungen werden nach Clerk-Nutzer-ID getrennt. Alle
 gespeicherten Daten werden beim Laden mit Zod geprüft. Ungültige oder
@@ -223,6 +232,7 @@ Die Tests prüfen unter anderem:
 - Formulare und fehlerhafte Eingaben
 - Audioeinstellungen und Fehlerfälle
 - Sitzungsverlauf
+- Gedankenablage
 - ausgewählte Konto-Komponenten
 
 Das verpflichtende Qualitäts-Gate ist npm run check. Es verbindet Linting,

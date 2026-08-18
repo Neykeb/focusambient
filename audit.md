@@ -26,6 +26,9 @@ lokalen Browserabläufe bestehen.
 - geschützte Seiten für Focus, Sounds, Insights und Settings
 - Speicherung abgeschlossener Fokus-Sitzungen im Browser
 - Sitzungsverlauf auf der Insights-Seite
+- Gedanken während einer Fokus-Sitzung speichern
+- offene Gedanken beim Timer und alle Gedanken unter Insights anzeigen
+- Gedanken erledigen und löschen
 - responsive Darstellung ab 320 Pixel
 - sichtbare Tastaturfokusse und Unterstützung für reduzierte Bewegung
 
@@ -48,6 +51,7 @@ Serveranbindung für Timer, Audioeinstellungen oder Sitzungen.
 
 - Eigene Timer und Sitzungen werden nach Clerk-Nutzer-ID getrennt gespeichert.
 - Audioeinstellungen werden lokal im Browser gespeichert.
+- Gedanken werden nach Nutzer-ID getrennt im Browser gespeichert und mit Zod geprüft.
 - Gespeicherte Daten werden beim Laden mit Zod geprüft.
 - Beschädigte gespeicherte Daten werden sicher verworfen.
 - Clerk-Schlüssel werden über eine lokale Umgebungsdatei eingelesen.
@@ -61,12 +65,12 @@ nicht zwischen Geräten synchronisiert und nicht serverseitig autorisiert.
 Zuletzt bestanden:
 
 - Linting mit Oxlint
-- 29 Tests in 11 Testdateien
+- 33 Tests in 12 Testdateien
 - TypeScript-Prüfung
 - Produktions-Build mit Vite
 - vollständiger Befehl npm run check
 
-Die 29 Tests wurden auf ihren Zweck geprüft. Sie decken unterschiedliche
+Die 33 Tests wurden auf ihren Zweck geprüft. Sie decken unterschiedliche
 Bereiche und wichtige Fehlerfälle ab. Es wurden keine Tests nur zur Verkürzung
 des Projekts entfernt.
 

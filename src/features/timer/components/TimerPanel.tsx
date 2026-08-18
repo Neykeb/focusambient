@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useCompletedSessionRecorder } from '../../sessions/hooks/useCompletedSessionRecorder'
+import { ThoughtCapture } from '../../thoughts/components/ThoughtCapture'
 import { useCustomTimers } from '../hooks/useCustomTimers'
 import { useTimer, type TimerStatus } from '../hooks/useTimer'
 import type { CustomTimerInput } from '../model/customTimerSchema'
@@ -108,6 +109,11 @@ export function TimerPanel({ storageOwnerId, onSessionComplete }: TimerPanelProp
           onStart={timer.start}
           onPause={timer.pause}
           onReset={timer.reset}
+        />
+        <ThoughtCapture
+          storageOwnerId={storageOwnerId}
+          presetId={timer.preset.id}
+          presetLabel={timer.preset.label}
         />
       </section>
 
