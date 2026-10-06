@@ -36,8 +36,8 @@ jobs:
       - name: App prüfen und bauen
         run: npm run check
         env:
-  VITE_CLERK_PUBLISHABLE_KEY: ${{ vars.VITE_CLERK_PUBLISHABLE_KEY }}
-  VITE_API_URL: ${{ vars.VITE_API_URL }}
+          VITE_CLERK_PUBLISHABLE_KEY: ${{ vars.VITE_CLERK_PUBLISHABLE_KEY }}
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
 
       - name: GitHub Pages einrichten
         uses: actions/configure-pages@v6
