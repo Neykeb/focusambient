@@ -37,7 +37,7 @@ jobs:
         run: npm run check
         env:
           VITE_CLERK_PUBLISHABLE_KEY: ${{ vars.VITE_CLERK_PUBLISHABLE_KEY }}
-          VITE_API_URL: ${{ vars.VITE_API_URL }}
+          VITE_API_URL: https://focusambient.onrender.com
 
       - name: GitHub Pages einrichten
         uses: actions/configure-pages@v6
