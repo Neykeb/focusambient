@@ -1,56 +1,69 @@
-import { useState } from 'react'
-import { useCompletedSessionRecorder } from '../../sessions/hooks/useCompletedSessionRecorder'
-import { ThoughtCapture } from '../../thoughts/components/ThoughtCapture'
-import { useCustomTimers } from '../hooks/useCustomTimers'
-import { useTimer, type TimerStatus } from '../hooks/useTimer'
-import type { CustomTimerInput } from '../model/customTimerSchema'
-import { formatTime } from '../utils/formatTime'
-import { CustomTimerDialog } from './CustomTimerDialog'
-import { CustomTimerShelf } from './CustomTimerShelf'
-import { TimerControls } from './molecules/TimerControls'
-import { PresetSelector } from './PresetSelector'
+import { useState } from "react";
+import { useCompletedSessionRecorder } from "../../sessions/hooks/useCompletedSessionRecorder";
+import { ThoughtCapture } from "../../thoughts/components/ThoughtCapture";
+import { useCustomTimers } from "../hooks/useCustomTimers";
+import { useTimer, type TimerStatus } from "../hooks/useTimer";
+import type { CustomTimerInput } from "../model/customTimerSchema";
+import { formatTime } from "../utils/formatTime";
+import { CustomTimerDialog } from "./CustomTimerDialog";
+import { CustomTimerShelf } from "./CustomTimerShelf";
+import { TimerControls } from "./molecules/TimerControls";
+import { PresetSelector } from "./PresetSelector";
 
 const statusLabels: Record<TimerStatus, string> = {
-  idle: 'Ready when you are',
-  running: 'Stay with the moment',
-  paused: 'Session paused',
-  completed: 'Session complete',
-}
+  idle: "Ready when you are",
+  running: "Stay with the moment",
+  paused: "Session paused",
+  completed: "Session complete",
+};
 
 type TimerPanelProps = {
-  storageOwnerId: string
-  onSessionComplete?: (session: { presetId: string; label: string; durationSeconds: number }) => void
-}
+  storageOwnerId: string;
+  getToken: () => Promise<string | null>;
+  sessionError?: string | null;
+  onSessionComplete?: (session: {
+    id?: string;
+    presetId: string;
+    label: string;
+    durationSeconds: number;
+  }) => void;
+};
 
-export function TimerPanel({ storageOwnerId, onSessionComplete }: TimerPanelProps) {
-  const timer = useTimer()
-  const { customTimers, addCustomTimer, removeCustomTimer } = useCustomTimers(storageOwnerId)
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
+export function TimerPanel({
+  storageOwnerId,
+  getToken,
+  sessionError,
+  onSessionComplete,
+}: TimerPanelProps) {
+  const timer = useTimer(storageOwnerId);
+  const { customTimers, addCustomTimer, removeCustomTimer } =
+    useCustomTimers(storageOwnerId);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   useCompletedSessionRecorder(
     timer.status,
     {
+      id: timer.sessionId,
       presetId: timer.preset.id,
       label: timer.preset.label,
       durationSeconds: timer.durationSeconds,
     },
     onSessionComplete,
-  )
-  const elapsedRatio = 1 - timer.remainingSeconds / timer.durationSeconds
-  const progressOffset = Math.min(100, Math.max(0, elapsedRatio * 100))
+  );
+  const elapsedRatio = 1 - timer.remainingSeconds / timer.durationSeconds;
+  const progressOffset = Math.min(100, Math.max(0, elapsedRatio * 100));
   const canReset =
-    timer.status !== 'idle' ||
-    timer.remainingSeconds !== timer.durationSeconds
+    timer.status !== "idle" || timer.remainingSeconds !== timer.durationSeconds;
 
   const createCustomTimer = (input: CustomTimerInput) => {
-    const newTimer = addCustomTimer(input)
-    timer.selectPreset(newTimer)
-    setIsDialogOpen(false)
-  }
+    const newTimer = addCustomTimer(input);
+    timer.selectPreset(newTimer);
+    setIsDialogOpen(false);
+  };
 
   const removeTimer = (timerId: string) => {
-    removeCustomTimer(timerId)
-    if (timer.preset.id === timerId) timer.selectPreset()
-  }
+    removeCustomTimer(timerId);
+    if (timer.preset.id === timerId) timer.selectPreset();
+  };
 
   return (
     <>
@@ -72,8 +85,19 @@ export function TimerPanel({ storageOwnerId, onSessionComplete }: TimerPanelProp
 
         <div className="relative mt-7 grid size-[min(72vw,25rem)] place-items-center rounded-full border border-white/10 bg-[linear-gradient(145deg,rgba(255,255,255,0.045),rgba(255,255,255,0.008))] shadow-[0_40px_120px_rgba(0,0,0,0.45),inset_0_1px_1px_rgba(255,255,255,0.09)] sm:mt-9">
           <div className="absolute inset-3 rounded-full border border-accent/10" />
-          <svg aria-hidden="true" className="absolute inset-0 size-full -rotate-90" viewBox="0 0 400 400">
-            <circle cx="200" cy="200" r="196" fill="none" stroke="rgba(255,255,255,0.035)" strokeWidth="3" />
+          <svg
+            aria-hidden="true"
+            className="absolute inset-0 size-full -rotate-90"
+            viewBox="0 0 400 400"
+          >
+            <circle
+              cx="200"
+              cy="200"
+              r="196"
+              fill="none"
+              stroke="rgba(255,255,255,0.035)"
+              strokeWidth="3"
+            />
             <circle
               cx="200"
               cy="200"
@@ -93,7 +117,10 @@ export function TimerPanel({ storageOwnerId, onSessionComplete }: TimerPanelProp
             <p className="text-[0.68rem] font-semibold tracking-[0.24em] text-muted uppercase">
               {timer.preset.label}
             </p>
-            <p aria-live="off" className="mt-3 text-[clamp(3.4rem,10vw,5.7rem)] font-extralight leading-none tracking-[-0.075em] text-ink tabular-nums">
+            <p
+              aria-live="off"
+              className="mt-3 text-[clamp(3.4rem,10vw,5.7rem)] font-extralight leading-none tracking-[-0.075em] text-ink tabular-nums"
+            >
               {formatTime(timer.remainingSeconds)}
             </p>
             <p aria-live="polite" className="mt-4 text-xs text-muted">
@@ -102,7 +129,9 @@ export function TimerPanel({ storageOwnerId, onSessionComplete }: TimerPanelProp
           </div>
         </div>
 
-        <h1 id="focus-heading" className="sr-only">Focus timer</h1>
+        <h1 id="focus-heading" className="sr-only">
+          Focus timer
+        </h1>
         <TimerControls
           status={timer.status}
           canReset={canReset}
@@ -110,8 +139,15 @@ export function TimerPanel({ storageOwnerId, onSessionComplete }: TimerPanelProp
           onPause={timer.pause}
           onReset={timer.reset}
         />
+        {sessionError && (
+          <p role="alert" className="mt-4 text-sm text-red-300">
+            {sessionError}
+          </p>
+        )}
         <ThoughtCapture
           storageOwnerId={storageOwnerId}
+          getToken={getToken}
+          sessionId={timer.sessionId}
           presetId={timer.preset.id}
           presetLabel={timer.preset.label}
         />
@@ -124,5 +160,5 @@ export function TimerPanel({ storageOwnerId, onSessionComplete }: TimerPanelProp
         />
       )}
     </>
-  )
+  );
 }

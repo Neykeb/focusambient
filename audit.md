@@ -6,17 +6,19 @@ Dieses Audit beschreibt den aktuellen Stand von FocusAmbient. Es hält fest,
 welche Funktionen vorhanden sind, welche Technik wirklich verwendet wird,
 welche Prüfungen bestanden wurden und welche Aufgaben noch offen sind.
 
-Stand: 16. August 2026
+Stand: 2. Oktober 2026
 
 ## Ergebnis
 
 Die App ist funktionsfähig und für die lokale Schulpräsentation technisch
-vorbereitet. Automatische Prüfungen, Produktions-Build und die wichtigsten
-lokalen Browserabläufe bestehen.
+vorbereitet. Linting, 56 Tests und der Produktions-Build bestehen. CORS,
+Logout, Benutzertrennung und MongoDB-Speicherung wurden manuell geprüft.
+Rate Limiting und ein JSON-Größenlimit sind im Backend eingerichtet.
 
 ## Vorhandene Funktionen
 
 - Timer mit Start, Pause, Fortsetzen und Zurücksetzen
+- laufende und pausierte Timer bleiben bei Seiten- und Fensterwechseln erhalten
 - Voreinstellungen für Pomodoro, Deep Focus und kurze Pause
 - eigene Timer von 1 bis 240 Minuten
 - Speicherung eigener Timer im Browser
@@ -24,7 +26,7 @@ lokalen Browserabläufe bestehen.
 - Wiedergabe, Pause, Wechsel und Lautstärkeregelung für Audio
 - Anmeldung und Registrierung mit Clerk
 - geschützte Seiten für Focus, Sounds, Insights und Settings
-- Speicherung abgeschlossener Fokus-Sitzungen im Browser
+- Speicherung abgeschlossener Fokus-Sitzungen über eine geschützte Express-API
 - Sitzungsverlauf auf der Insights-Seite
 - Gedanken während einer Fokus-Sitzung speichern
 - offene Gedanken beim Timer und alle Gedanken unter Insights anzeigen
@@ -40,37 +42,46 @@ lokalen Browserabläufe bestehen.
 - Tailwind CSS
 - TanStack Router
 - Clerk
+- Node.js und Express
+- MongoDB und Mongoose
 - Zod
 - localStorage
 - Vitest und Testing Library für automatische Prüfungen
 
-TanStack Query wird nicht verwendet. Die App besitzt aktuell keine eigene
-Serveranbindung für Timer, Audioeinstellungen oder Sitzungen.
+TanStack Query wird nicht verwendet. Nur abgeschlossene Sitzungen besitzen eine
+Serveranbindung. Timer, Audioeinstellungen, Gedanken und eigene Timer bleiben lokal.
 
 ## Daten und Sicherheit
 
-- Eigene Timer und Sitzungen werden nach Clerk-Nutzer-ID getrennt gespeichert.
+- Eigene Timer werden lokal nach Clerk-Nutzer-ID getrennt gespeichert.
+- Die API prüft das Clerk-Token und übernimmt die Nutzer-ID nicht aus Eingaben.
+- Sitzungen werden serverseitig nach der geprüften Nutzer-ID getrennt.
 - Audioeinstellungen werden lokal im Browser gespeichert.
 - Gedanken werden nach Nutzer-ID getrennt im Browser gespeichert und mit Zod geprüft.
 - Gespeicherte Daten werden beim Laden mit Zod geprüft.
 - Beschädigte gespeicherte Daten werden sicher verworfen.
 - Clerk-Schlüssel werden über eine lokale Umgebungsdatei eingelesen.
 - Echte Schlüssel dürfen nicht in Git gespeichert werden.
+- CORS ist auf die konfigurierte Frontend-URL begrenzt.
+- API-Anfragen sind auf 100 Anfragen pro 15 Minuten und IP begrenzt.
+- JSON-Anfragen sind auf 100 KB begrenzt.
+- Sitzungen und Gedanken werden über ownerId voneinander getrennt.
+- MongoDB- und Clerk-Schlüssel wurden nach der lokalen Prüfung erneuert.
 
-Die Speicherung im Browser ist kein Ersatz für ein Backend. Die Daten werden
-nicht zwischen Geräten synchronisiert und nicht serverseitig autorisiert.
+Abgeschlossene Sitzungen werden in MongoDB gespeichert. Eine vorhandene lokale
+JSON-Datei wird einmalig importiert und anschließend nur als ignoriertes Backup behalten.
 
 ## Automatische Prüfungen
 
-Zuletzt bestanden:
+Zuletzt am 2. Oktober 2026 bestanden:
 
 - Linting mit Oxlint
-- 33 Tests in 12 Testdateien
+- 56 Tests in 17 Testdateien
 - TypeScript-Prüfung
 - Produktions-Build mit Vite
 - vollständiger Befehl npm run check
 
-Die 33 Tests wurden auf ihren Zweck geprüft. Sie decken unterschiedliche
+Die 56 Tests wurden auf ihren Zweck geprüft. Sie decken unterschiedliche
 Bereiche und wichtige Fehlerfälle ab. Es wurden keine Tests nur zur Verkürzung
 des Projekts entfernt.
 
@@ -89,10 +100,12 @@ des Projekts entfernt.
 
 - Klangqualität und Loop-Übergänge von Regen, Wald und Feuer selbst anhören
 - Anmeldung, Registrierung und Abmeldung mit einem echten Clerk-Konto prüfen
+- Sitzungsverlauf mit echten Clerk-Schlüsseln durch Frontend und Backend prüfen
+- neue Backend-Fehlerzustände auf Desktop und 320 Pixel Breite im Browser prüfen
 
 ## Browserprüfung
 
-Bestanden in der lokalen Vorschau:
+Vor der Backend-Erweiterung bestanden in der lokalen Vorschau:
 
 - Timer starten, pausieren und zurücksetzen
 - eigenen Timer erstellen, nach Neuladen wiederfinden und löschen
@@ -103,12 +116,20 @@ Bestanden in der lokalen Vorschau:
 - Desktopdarstellung und 320 Pixel Mobilbreite
 - kein horizontaler Überlauf bei 320 Pixel
 - keine App-Fehler in der Browser-Konsole
+- CORS-Anfrage zwischen Frontend und Backend
+- Anmeldung und Abmeldung
+- Zugriffsschutz nach dem Logout
+- Datentrennung mit zwei Benutzerkonten
+- Speicherung und Filterung der MongoDB-Daten nach ownerId
 
 ## Offene Punkte
 
 - Klangqualität und Loop-Übergänge der MP3-Dateien mit Kopfhörern anhören
-- Clerk vor einer Veröffentlichung mit Produktionsschlüsseln konfigurieren
+- Clerk vor einer Veröffentlichung mit Produktionsschlüsseln erneut prüfen
+- Rate Limiting unter realer Produktionslast beobachten
+- Express-Backend vor einer öffentlichen Nutzung separat bereitstellen
 - in den GitHub-Pages-Einstellungen einmalig `GitHub Actions` als Quelle wählen
+
 
 ## GitHub Pages
 
@@ -129,6 +150,7 @@ Bestanden in der lokalen Vorschau:
   zusammen ungefähr 15,4 MB groß und werden erst beim Abspielen geladen.
 - Autoren, Originalseiten und Pixabay Content License sind unter
   public/audio/README.md dokumentiert.
+- ERD erstellt und Datenbeziehungen dokumentiert
 
 ## Einsatz von Agent Coding
 

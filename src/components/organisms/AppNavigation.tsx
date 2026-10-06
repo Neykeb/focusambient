@@ -40,7 +40,10 @@ export function AppNavigation({ pathname, variant }: AppNavigationProps) {
 
   return (
     <aside className="fixed inset-y-0 left-0 z-20 hidden w-60 flex-col border-r border-line bg-canvas/75 px-5 py-6 backdrop-blur-xl lg:flex">
-      <Link to="/" className="px-2 text-sm font-semibold tracking-[-0.03em] text-ink">
+      <Link
+        to="/"
+        className="px-2 text-sm font-semibold tracking-[-0.03em] text-ink"
+      >
         focus<span className="text-accent">ambient</span>
       </Link>
       <nav aria-label="Main navigation" className="mt-14 space-y-1">
@@ -48,7 +51,7 @@ export function AppNavigation({ pathname, variant }: AppNavigationProps) {
           <Link
             key={label}
             to={to}
-            aria-current={pathname === to ? 'page' : undefined}
+            aria-current={pathname === to ? "page" : undefined}
             className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-sm text-muted transition hover:bg-white/4 hover:text-ink aria-[current=page]:bg-white/6 aria-[current=page]:text-ink"
           >
             <Icon size={18} />
@@ -59,7 +62,7 @@ export function AppNavigation({ pathname, variant }: AppNavigationProps) {
       <div className="mt-auto">
         <Link
           to="/settings"
-          aria-current={pathname === '/settings' ? 'page' : undefined}
+          aria-current={pathname === "/settings" ? "page" : undefined}
           className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-sm text-muted transition hover:bg-white/4 hover:text-ink aria-[current=page]:bg-white/6 aria-[current=page]:text-ink"
         >
           <Settings2 size={18} />
@@ -67,6 +70,9 @@ export function AppNavigation({ pathname, variant }: AppNavigationProps) {
         </Link>
         <AuthAccountSummary />
       </div>
+      <div className="px-2 pb-3">
+        <AuthControls />
+      </div>
     </aside>
-  )
+  );
 }

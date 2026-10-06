@@ -15,6 +15,7 @@ Funktionen werden zuerst hier ergänzt.
 - Voreinstellungen für Pomodoro, Deep Focus und kurze Pause
 - Starten, Pausieren, Fortsetzen und Zurücksetzen
 - genaue Restzeit durch Berechnung mit einem echten Endzeitpunkt
+- laufende und pausierte Timer bleiben bei Seiten- und Fensterwechseln erhalten
 - eigene Timer mit Namen und 1 bis 240 Minuten
 - eigene Timer erstellen, speichern und löschen
 
@@ -30,8 +31,8 @@ Funktionen werden zuerst hier ergänzt.
 
 - Anmeldung und Registrierung mit Clerk
 - geschützte Seiten für Focus, Sounds, Insights und Settings
-- eigene Timer, Sitzungen und Gedanken werden nach Clerk-Nutzer-ID getrennt
-- Speicherung erfolgt aktuell im Browser mit localStorage
+- eigene Timer und Gedanken werden im Browser nach Clerk-Nutzer-ID getrennt
+- abgeschlossene Sitzungen werden über eine geschützte Express-API gespeichert
 - gespeicherte Daten werden mit Zod geprüft
 
 ### Sitzungsverlauf
@@ -68,11 +69,13 @@ Funktionen werden zuerst hier ergänzt.
 - Tailwind CSS
 - TanStack Router
 - Clerk
+- Node.js und Express
+- MongoDB und Mongoose
 - Zod
 - Vitest und Testing Library
 
-TanStack Query wird nicht verwendet. Eine Bibliothek für Serverdaten wird erst
-ergänzt, wenn die App eine echte Serveranbindung besitzt.
+TanStack Query wird nicht verwendet. Die kleine Serveranbindung verwendet die
+vorhandene Fetch-API und benötigt keine zusätzliche Serverdaten-Bibliothek.
 
 ## 5. Projektstruktur
 
@@ -99,14 +102,17 @@ Feature-spezifische Komponenten bleiben in ihrem Feature-Ordner.
 ## 6. Daten und Grenzen
 
 - localStorage-Daten werden mit versionierten Schlüsseln gespeichert.
+- Sitzungen liegen nach Nutzer-ID getrennt in MongoDB.
+- vorhandene lokale Sitzungen werden einmalig und ohne Duplikate übernommen.
 - Ungültige oder beschädigte Daten werden sicher verworfen.
 - Timer verwenden echte Endzeitpunkte und nicht nur herunterzählende Intervalle.
 - Audio, Intervalle und Event Listener werden beim Verlassen aufgeräumt.
 - echte Clerk-Schlüssel stehen nur in einer nicht versionierten lokalen Datei.
 - Dateien mit VITE-Präfix dürfen nur öffentliche Browserwerte enthalten.
 
-Die lokalen Daten sind nicht geräteübergreifend verfügbar. Clerk übernimmt die
-Anmeldung, ersetzt aber kein Backend mit serverseitiger Autorisierung.
+Gedanken, eigene Timer und Audioeinstellungen sind nicht geräteübergreifend
+verfügbar. Die Sitzungs-API prüft Clerk serverseitig und speichert ausschließlich
+vollständig abgeschlossene Sitzungen in MongoDB.
 
 ## 7. Aktueller Stand
 
@@ -122,6 +128,7 @@ Bereits vereinfacht:
 ## 8. Veröffentlichung
 
 - GitHub Pages veröffentlicht nur den fertigen Produktions-Build aus `dist`.
+- Das Express-Backend wird nicht von GitHub Pages veröffentlicht.
 - Der Build verwendet den Repository-Pfad `/focusambient/`.
 - GitHub Actions baut und veröffentlicht die App nach Änderungen auf `main`.
 - Direkte Seitenaufrufe werden auf die React-App zurückgeführt.

@@ -6,6 +6,9 @@ import type { FocusSession } from '../model/focusSessionSchema'
 type SessionHistoryProps = {
   sessions: FocusSession[]
   onClear: () => void
+  isLoading?: boolean
+  error?: string | null
+  onRetry?: () => void
   children?: ReactNode
 }
 
@@ -20,7 +23,14 @@ function formatCompletedAt(completedAt: string) {
   }).format(new Date(completedAt))
 }
 
-export function SessionHistory({ sessions, onClear, children }: SessionHistoryProps) {
+export function SessionHistory({
+  sessions,
+  onClear,
+  isLoading = false,
+  error,
+  onRetry,
+  children,
+}: SessionHistoryProps) {
   const totalMinutes = Math.round(
     sessions.reduce((total, session) => total + session.durationSeconds, 0) / 60,
   )
@@ -43,6 +53,17 @@ export function SessionHistory({ sessions, onClear, children }: SessionHistoryPr
 
       {children}
 
+      {error && (
+        <div role="alert" className="mt-8 rounded-2xl border border-red-400/30 bg-red-400/10 p-4 text-sm text-red-200">
+          <p>{error}</p>
+          {onRetry && (
+            <Button variant="secondary" className="mt-3" onClick={onRetry}>
+              Try again
+            </Button>
+          )}
+        </div>
+      )}
+
       <section aria-label="Focus summary" className="mt-10 grid gap-3 sm:grid-cols-2">
         <div className="rounded-2xl border border-line bg-elevated/65 p-5">
           <p className="text-xs text-muted">Completed sessions</p>
@@ -54,7 +75,9 @@ export function SessionHistory({ sessions, onClear, children }: SessionHistoryPr
         </div>
       </section>
 
-      {sessions.length === 0 ? (
+      {isLoading ? (
+        <p role="status" className="mt-8 text-sm text-muted">Loading focus history…</p>
+      ) : sessions.length === 0 ? (
         <section className="mt-6 grid flex-1 place-items-center rounded-3xl border border-dashed border-line p-10 text-center">
           <div>
             <p className="text-base font-medium">No completed sessions yet</p>

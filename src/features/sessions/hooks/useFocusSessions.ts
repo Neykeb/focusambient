@@ -1,67 +1,91 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { storedFocusSessionsSchema, type FocusSession, type NewFocusSession } from '../model/focusSessionSchema'
+import { useCallback, useEffect, useState } from 'react'
+import {
+  createSession,
+  deleteSessions,
+  getSessions,
+  importSessions,
+} from '../api/focusSessionsApi'
+import {
+  storedFocusSessionsSchema,
+  type FocusSession,
+  type NewFocusSession,
+} from '../model/focusSessionSchema'
 
 export const FOCUS_SESSIONS_STORAGE_KEY = 'focusambient.focus-sessions.v1'
-const MAX_STORED_SESSIONS = 100
+const MIGRATION_STORAGE_KEY = 'focusambient.focus-sessions-api-migration.v1'
+
+type GetToken = () => Promise<string | null>
 
 export function getFocusSessionsStorageKey(storageOwnerId: string) {
   return `${FOCUS_SESSIONS_STORAGE_KEY}.${encodeURIComponent(storageOwnerId)}`
 }
 
-function loadFocusSessions(storageKey: string): FocusSession[] {
+export function useFocusSessions(storageOwnerId: string, getToken: GetToken) {
+  const [sessions, setSessions] = useState<FocusSession[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const loadSessions = useCallback(async () => {
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      await migrateLocalSessions(storageOwnerId, getToken)
+      setSessions(await getSessions(getToken))
+    } catch {
+      setError('Focus history could not be loaded. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
+  }, [getToken, storageOwnerId])
+
+  useEffect(() => {
+    void loadSessions()
+  }, [loadSessions])
+
+  const recordSession = useCallback(async (input: NewFocusSession) => {
+    try {
+      const session = await createSession(input, getToken)
+      setSessions((current) => [session, ...current].slice(0, 100))
+      setError(null)
+    } catch {
+      setError('The completed session could not be saved.')
+    }
+  }, [getToken])
+
+  const clearSessions = useCallback(async () => {
+    try {
+      await deleteSessions(getToken)
+      setSessions([])
+      setError(null)
+    } catch {
+      setError('Focus history could not be cleared.')
+    }
+  }, [getToken])
+
+  return { sessions, isLoading, error, loadSessions, recordSession, clearSessions }
+}
+
+async function migrateLocalSessions(storageOwnerId: string, getToken: GetToken) {
+  const migrationKey = `${MIGRATION_STORAGE_KEY}.${encodeURIComponent(storageOwnerId)}`
+  if (window.localStorage.getItem(migrationKey)) return
+
+  const storageKey = getFocusSessionsStorageKey(storageOwnerId)
+  const sessions = readLocalSessions(storageKey)
+  if (sessions === null) return
+
+  if (sessions.length > 0) await importSessions(sessions, getToken)
+  window.localStorage.removeItem(storageKey)
+  window.localStorage.setItem(migrationKey, 'complete')
+}
+
+function readLocalSessions(storageKey: string) {
   try {
     const storedValue = window.localStorage.getItem(storageKey)
     if (!storedValue) return []
-
     const result = storedFocusSessionsSchema.safeParse(JSON.parse(storedValue))
-    return result.success ? result.data : []
+    return result.success ? result.data : null
   } catch {
-    return []
+    return null
   }
-}
-
-function createSessionId() {
-  if (typeof crypto.randomUUID === 'function') return crypto.randomUUID()
-  return `session-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
-}
-
-export function useFocusSessions(storageOwnerId: string) {
-  const storageKey = getFocusSessionsStorageKey(storageOwnerId)
-  const initialSessions = loadFocusSessions(storageKey)
-  const sessionsRef = useRef<FocusSession[]>(initialSessions)
-  const [sessions, setSessions] = useState<FocusSession[]>(initialSessions)
-
-  useEffect(() => {
-    const syncFromStorage = (event: StorageEvent) => {
-      if (event.key !== storageKey) return
-      const nextSessions = loadFocusSessions(storageKey)
-      sessionsRef.current = nextSessions
-      setSessions(nextSessions)
-    }
-
-    window.addEventListener('storage', syncFromStorage)
-    return () => window.removeEventListener('storage', syncFromStorage)
-  }, [storageKey])
-
-  const recordSession = useCallback((input: NewFocusSession) => {
-    const session: FocusSession = {
-      ...input,
-      id: createSessionId(),
-      completedAt: new Date().toISOString(),
-    }
-    const nextSessions = [session, ...sessionsRef.current].slice(0, MAX_STORED_SESSIONS)
-
-    window.localStorage.setItem(storageKey, JSON.stringify(nextSessions))
-    sessionsRef.current = nextSessions
-    setSessions(nextSessions)
-    return session
-  }, [storageKey])
-
-  const clearSessions = useCallback(() => {
-    window.localStorage.setItem(storageKey, JSON.stringify([]))
-    sessionsRef.current = []
-    setSessions([])
-  }, [storageKey])
-
-  return { sessions, recordSession, clearSessions }
 }

@@ -1,4 +1,4 @@
-import { SignedIn, SignedOut, useUser } from '@clerk/clerk-react'
+import { SignedIn, SignedOut, useAuth, useUser } from '@clerk/clerk-react'
 import { Navigate } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
 import { isClerkConfigured } from '../model/clerkConfig'
@@ -21,11 +21,12 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
 }
 
 type ProtectedUserRouteProps = {
-  children: (storageOwnerId: string) => ReactNode
+  children: (storageOwnerId: string, getToken: () => Promise<string | null>) => ReactNode
 }
 
 function AuthenticatedUserRoute({ children }: ProtectedUserRouteProps) {
   const { isLoaded, user } = useUser()
+  const { getToken } = useAuth()
 
   if (!isLoaded || !user) {
     return (
@@ -36,11 +37,11 @@ function AuthenticatedUserRoute({ children }: ProtectedUserRouteProps) {
     )
   }
 
-  return children(user.id)
+  return children(user.id, getToken)
 }
 
 export function ProtectedUserRoute({ children }: ProtectedUserRouteProps) {
-  if (!isClerkConfigured) return children('local-preview')
+  if (!isClerkConfigured) return children('local-preview', async () => null)
 
   return (
     <>

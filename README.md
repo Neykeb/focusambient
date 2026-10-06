@@ -1,8 +1,8 @@
 # FocusAmbient
 
 FocusAmbient ist eine ruhige Fokus-App für den Browser. Sie verbindet einen
-genauen Timer mit lokalen Hintergrundgeräuschen. Eigene Timer und vollständig
-beendete Sitzungen werden im Browser gespeichert.
+genauen Timer mit lokalen Hintergrundgeräuschen. Eigene Timer werden im Browser
+und vollständig beendete Sitzungen über eine kleine Express-API gespeichert.
 
 Die Oberfläche ist dunkel, minimalistisch und für Desktop und Mobilgeräte
 geeignet.
@@ -14,6 +14,7 @@ geeignet.
 - Pomodoro, Deep Focus und kurze Pause als Voreinstellungen
 - Timer starten, pausieren, fortsetzen und zurücksetzen
 - genaue Zeitberechnung mit einem echten Endzeitpunkt
+- laufende und pausierte Timer bei Seiten- und Fensterwechseln fortsetzen
 - eigene Timer mit Namen und 1 bis 240 Minuten
 - eigene Timer speichern und löschen
 
@@ -50,6 +51,9 @@ geeignet.
 - Tailwind CSS
 - TanStack Router
 - Clerk
+- Node.js und Express
+- express-rate-limit
+- MongoDB und Mongoose
 - Zod
 - Vitest
 - Testing Library
@@ -77,36 +81,65 @@ Beispieldatei für Umgebungsvariablen kopieren:
 cp .env.example .env.local
 ~~~
 
-Entwicklungsserver starten:
+Frontend und Backend in zwei Terminals starten:
 
 ~~~bash
 npm run dev
+npm run dev:server
 ~~~
 
-Vite zeigt danach die lokale Adresse im Terminal an.
+Vite zeigt die Frontend-Adresse im Terminal an. Die API läuft standardmäßig
+unter `http://localhost:3000`.
 
 ## Clerk einrichten
 
-In der Datei .env.local wird nur der öffentliche Clerk-Schlüssel eingetragen:
+In der Datei .env.local werden die lokale API-Adresse sowie die Clerk-Schlüssel
+eingetragen:
 
 ~~~env
 VITE_CLERK_PUBLISHABLE_KEY=pk_test_...
+VITE_API_URL=http://localhost:3000
+CLERK_PUBLISHABLE_KEY=pk_test_...
+CLERK_SECRET_KEY=sk_test_...
+FRONTEND_URL=http://localhost:5173
+PORT=3000
+MONGODB_URL=mongodb+srv://USER:PASSWORD@CLUSTER.mongodb.net/focusambient
 ~~~
 
 Wichtig:
 
 - Secret Keys dürfen niemals in Dateien mit dem Präfix VITE_ stehen.
+- `CLERK_PUBLISHABLE_KEY` verwendet denselben öffentlichen `pk_test_...`-Wert
+  wie `VITE_CLERK_PUBLISHABLE_KEY`. Das Backend akzeptiert zusätzlich den
+  Vite-Wert als lokale Fallback-Konfiguration.
 - .env.local darf nicht committed werden.
+- `MONGODB_URL` bleibt ausschließlich im Backend und darf kein `VITE_`-Präfix erhalten.
 - Im Clerk-Dashboard sind für dieses Projekt E-Mail und Google vorgesehen.
 
-Ohne Clerk-Schlüssel startet die App als lokale Vorschau. Dadurch können Timer,
-Audio und Sitzungsverlauf auch ohne echtes Konto getestet werden.
+Ohne Clerk-Schlüssel startet die App als lokale Vorschau. Timer, Audio, eigene
+Timer und Gedanken können dann getestet werden. Die geschützte Sitzungs-API
+benötigt dagegen eine echte Clerk-Anmeldung.
+
+## Backend-Sicherheit
+
+Das Backend verwendet:
+
+- CORS mit einer festgelegten Frontend-URL
+- Rate Limiting für API-Anfragen
+- ein JSON-Größenlimit von 100 KB
+- serverseitige Clerk-Authentifizierung
+- Zod-Prüfung für Sitzungs- und Gedankendaten
+
+Die API erlaubt höchstens 100 Anfragen pro IP-Adresse innerhalb von
+15 Minuten. Bei Überschreitung wird HTTP 429 zurückgegeben.
 
 ## Verfügbare Befehle
 
 | Befehl | Aufgabe |
 | --- | --- |
 | npm run dev | Startet den Entwicklungsserver |
+| npm run dev:server | Startet die API im Beobachtungsmodus |
+| npm run server | Startet die API ohne Beobachtungsmodus |
 | npm run lint | Prüft den Code mit Oxlint |
 | npm run test | Führt alle Tests einmal aus |
 | npm run test:watch | Startet Tests im Beobachtungsmodus |
@@ -161,6 +194,12 @@ src/
 
 public/
   audio/                Lokale MP3-Dateien und Quellen
+
+server/
+  app.ts                Express-Routen und Clerk-Schutz
+  database/             MongoDB-Verbindung und einmalige JSON-Migration
+  models/               Mongoose-Modell für abgeschlossene Sitzungen
+  sessionStore.ts       Lesen und Schreiben der MongoDB-Sitzungen
 ~~~
 
 ## Aufbau der Komponenten
@@ -179,24 +218,139 @@ liegen Timer-, Audio-, Konto- und Sitzungslogik getrennt voneinander.
 
 ## Datenspeicherung
 
-Die App verwendet aktuell localStorage im Browser.
+Die App verwendet localStorage und eine kleine Express-API.
 
 Gespeichert werden:
 
 - eigene Timer
 - ausgewähltes Geräusch und Lautstärke
-- vollständig abgeschlossene Fokus-Sitzungen
 - Gedanken aus der Gedankenablage
 
-Eigene Timer und Sitzungen werden nach Clerk-Nutzer-ID getrennt. Alle
-gespeicherten Daten werden beim Laden mit Zod geprüft. Ungültige oder
-beschädigte Daten werden sicher verworfen.
+Vollständig abgeschlossene Fokus-Sitzungen liegen nach Clerk-Nutzer-ID getrennt
+in MongoDB. Vorhandene Browser-Sitzungen werden nach einer erfolgreichen Anmeldung
+einmalig übernommen. Eine vorhandene lokale Backend-JSON-Datei wird beim ersten
+MongoDB-Start ebenfalls importiert und danach nur noch als Backup behalten.
 
 Wichtige Grenze:
 
-localStorage ist keine Serverdatenbank. Die Daten werden nicht zwischen Geräten
-synchronisiert. Clerk übernimmt die Anmeldung, aber keine serverseitige
-Speicherung der App-Daten.
+Die MongoDB-Zugangsdaten sind geheim. Für eine öffentliche Nutzung müssen außerdem
+die erlaubten Netzwerkzugriffe im MongoDB-Dienst passend eingeschränkt werden.
+
+## ERD
+
+```mermaid
+erDiagram
+    CLERK_USER ||--o{ FOCUS_SESSION : owns
+    CLERK_USER ||--o{ THOUGHT : owns
+    FOCUS_SESSION ||--o{ THOUGHT : contains
+
+    CLERK_USER {
+        string id PK
+    }
+
+    FOCUS_SESSION {
+        string id PK
+        string ownerId FK
+        string presetId
+        string label
+        number durationSeconds
+        datetime completedAt
+    }
+
+    THOUGHT {
+        string id PK
+        string ownerId FK
+        string sessionId FK
+        string text
+        string presetId
+        string presetLabel
+        boolean isDone
+        datetime createdAt
+    }
+```
+Beziehungen:
+
+Ein Clerk-Benutzer besitzt mehrere Fokus-Sitzungen.
+Ein Clerk-Benutzer besitzt mehrere Gedanken.
+Eine Fokus-Sitzung kann mehrere Gedanken enthalten.
+ownerId trennt die Daten der Benutzer.
+sessionId verbindet einen Gedanken mit einer Sitzung.
+Timer, Audioeinstellungen und eigene Timer bleiben lokale Browserdaten.
+
+## API-Dokumentation
+
+Die API läuft lokal unter:
+
+~~~text
+http://localhost:3000
+~~~
+
+Geschützte Endpunkte benötigen eine gültige Clerk-Anmeldung.
+
+### Gesundheitsprüfung
+
+| Methode | Adresse | Beschreibung |
+| --- | --- | --- |
+| GET | `/api/health` | Prüft, ob die API läuft |
+
+Antwort:
+
+~~~json
+{
+  "status": "ok"
+}
+~~~
+
+### Sitzungen
+
+| Methode | Adresse | Beschreibung |
+| --- | --- | --- |
+| GET | `/api/sessions` | Lädt die Sitzungen des angemeldeten Benutzers |
+| POST | `/api/sessions` | Speichert eine abgeschlossene Sitzung |
+| DELETE | `/api/sessions` | Löscht die Sitzungen des Benutzers |
+| POST | `/api/sessions/import` | Importiert lokale Sitzungen |
+
+Eine neue Sitzung enthält:
+
+~~~json
+{
+  "presetId": "pomodoro",
+  "label": "Pomodoro",
+  "durationSeconds": 1500
+}
+~~~
+
+### Gedanken
+
+| Methode | Adresse | Beschreibung |
+| --- | --- | --- |
+| GET | `/api/thoughts` | Lädt die Gedanken des Benutzers |
+| POST | `/api/thoughts` | Speichert einen neuen Gedanken |
+| PATCH | `/api/thoughts/:id` | Ändert den Erledigt-Status |
+| DELETE | `/api/thoughts/:id` | Löscht einen Gedanken |
+
+Ein neuer Gedanke enthält:
+
+~~~json
+{
+  "sessionId": "session-id",
+  "text": "Gedanke später bearbeiten",
+  "presetId": "pomodoro",
+  "presetLabel": "Pomodoro"
+}
+~~~
+
+### Fehlercodes
+
+- `400`: Ungültige Eingabedaten
+- `401`: Anmeldung erforderlich
+- `404`: Datensatz wurde nicht gefunden
+- `429`: Zu viele Anfragen
+- `500`: Interner Serverfehler
+
+Alle Sitzungen und Gedanken werden ausschließlich für den angemeldeten
+Benutzer verarbeitet. Die Benutzerzuordnung wird serverseitig aus der
+Clerk-Authentifizierung übernommen.
 
 ## Audio und Lizenzen
 
@@ -234,15 +388,21 @@ Die Tests prüfen unter anderem:
 - Sitzungsverlauf
 - Gedankenablage
 - ausgewählte Konto-Komponenten
+- CORS-Kommunikation zwischen Frontend und Backend
+- Benutzertrennung mit zwei Benutzerkonten
+- Logout und geschützte Seiten
+- MongoDB-Speicherung mit ownerId
 
 Das verpflichtende Qualitäts-Gate ist npm run check. Es verbindet Linting,
 Tests, TypeScript-Prüfung und Produktions-Build.
 
+
+
 ## Bekannte Grenzen
 
-- App-Daten werden nur lokal im Browser gespeichert.
-- Daten werden nicht zwischen Geräten synchronisiert.
-- Für sichere, dauerhafte Nutzerdaten wäre ein Backend notwendig.
+- eigene Timer, Gedanken und Audioeinstellungen bleiben lokal im Browser.
+- die Verfügbarkeit des Sitzungsverlaufs hängt von der MongoDB-Verbindung ab.
+- das Backend ist noch nicht veröffentlicht.
 - Clerk benötigt vor einer Veröffentlichung Produktionsschlüssel.
 - Klangqualität und Loop-Übergänge sollten vor einer Veröffentlichung persönlich
   mit Kopfhörern geprüft werden.
@@ -259,6 +419,9 @@ Tests, TypeScript-Prüfung und Produktions-Build.
 Die App wird über GitHub Actions auf GitHub Pages veröffentlicht. Bei jedem
 Push auf `main` wird zuerst `npm run check` ausgeführt. Danach wird nur der
 fertige Ordner `dist` veröffentlicht.
+
+GitHub Pages veröffentlicht das Express-Backend nicht. Ohne separat betriebenes
+Backend ist der serverseitige Sitzungsverlauf in der veröffentlichten App nicht verfügbar.
 
 Einmalige Einstellung auf GitHub:
 

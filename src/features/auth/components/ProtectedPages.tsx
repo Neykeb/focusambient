@@ -7,7 +7,9 @@ import { ProtectedRoute, ProtectedUserRoute } from './ProtectedRoute'
 export function FocusRoute() {
   return (
     <ProtectedUserRoute>
-      {(storageOwnerId) => <HomePage storageOwnerId={storageOwnerId} />}
+      {(storageOwnerId, getToken) => (
+        <HomePage storageOwnerId={storageOwnerId} getToken={getToken} />
+      )}
     </ProtectedUserRoute>
   )
 }
@@ -23,7 +25,9 @@ export function SoundsRoute() {
 export function InsightsRoute() {
   return (
     <ProtectedUserRoute>
-      {(storageOwnerId) => <InsightsPage storageOwnerId={storageOwnerId} />}
+      {(storageOwnerId, getToken) => (
+        <InsightsPage storageOwnerId={storageOwnerId} getToken={getToken} />
+      )}
     </ProtectedUserRoute>
   )
 }

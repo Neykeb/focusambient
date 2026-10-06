@@ -15,9 +15,10 @@ describe('AuthControls', () => {
   it('keeps the sign-in entry visible when Clerk is not configured', () => {
     render(<RouterProvider router={router} />)
 
-    expect(screen.getByRole('link', { name: 'Sign in' })).toHaveAttribute(
-      'href',
-      '/sign-in',
-    )
+    const signInLinks = screen.getAllByRole("link", { name: "Sign in" });
+
+    expect(signInLinks).toHaveLength(2);
+    expect(signInLinks[0]).toHaveAttribute("href", "/sign-in");
+    expect(signInLinks[1]).toHaveAttribute("href", "/sign-in");
   })
 })

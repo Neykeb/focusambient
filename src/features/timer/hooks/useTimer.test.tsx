@@ -5,6 +5,7 @@ import { timerPresets } from '../model/presets'
 
 describe('useTimer', () => {
   beforeEach(() => {
+    window.localStorage.clear()
     vi.useFakeTimers()
     vi.setSystemTime(new Date('2026-07-15T12:00:00Z'))
   })
@@ -14,7 +15,7 @@ describe('useTimer', () => {
   })
 
   it('counts from an absolute end time while running', () => {
-    const { result } = renderHook(() => useTimer())
+    const { result } = renderHook(() => useTimer('user-test'))
 
     act(() => result.current.start())
     act(() => {
@@ -26,7 +27,7 @@ describe('useTimer', () => {
   })
 
   it('pauses and resumes without losing remaining time', () => {
-    const { result } = renderHook(() => useTimer())
+    const { result } = renderHook(() => useTimer('user-test'))
 
     act(() => result.current.start())
     act(() => vi.advanceTimersByTime(3_000))
@@ -45,7 +46,7 @@ describe('useTimer', () => {
   })
 
   it('resets and switches presets predictably', () => {
-    const { result } = renderHook(() => useTimer())
+    const { result } = renderHook(() => useTimer('user-test'))
 
     act(() => result.current.start())
     act(() => vi.advanceTimersByTime(4_000))
@@ -67,12 +68,40 @@ describe('useTimer', () => {
       compactLabel: 'Test',
       durationSeconds: 2,
     }
-    const { result } = renderHook(() => useTimer(shortPreset))
+    const { result } = renderHook(() => useTimer('user-test', shortPreset))
 
     act(() => result.current.start())
     act(() => vi.advanceTimersByTime(2_000))
 
     expect(result.current.remainingSeconds).toBe(0)
     expect(result.current.status).toBe('completed')
+  })
+
+  it('continues running after the focus page is mounted again', () => {
+    const firstPage = renderHook(() => useTimer('user-test'))
+    act(() => firstPage.result.current.start())
+    act(() => vi.advanceTimersByTime(5_000))
+    firstPage.unmount()
+
+    act(() => vi.advanceTimersByTime(10_000))
+    const reopenedPage = renderHook(() => useTimer('user-test'))
+    act(() => vi.advanceTimersByTime(250))
+
+    expect(reopenedPage.result.current.status).toBe('running')
+    expect(reopenedPage.result.current.remainingSeconds).toBe(1_485)
+  })
+
+  it('restores a paused timer without counting further', () => {
+    const firstPage = renderHook(() => useTimer('user-test'))
+    act(() => firstPage.result.current.start())
+    act(() => vi.advanceTimersByTime(5_000))
+    act(() => firstPage.result.current.pause())
+    firstPage.unmount()
+
+    act(() => vi.advanceTimersByTime(10_000))
+    const reopenedPage = renderHook(() => useTimer('user-test'))
+
+    expect(reopenedPage.result.current.status).toBe('paused')
+    expect(reopenedPage.result.current.remainingSeconds).toBe(1_495)
   })
 })
