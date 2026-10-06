@@ -41,6 +41,20 @@ describe('useFocusSessions', () => {
     )
   })
 
+  it('loads local history without calling the API when no user token exists', async () => {
+    const localGetToken = vi.fn(async () => null)
+    window.localStorage.setItem(
+      getFocusSessionsStorageKey('local-preview'),
+      JSON.stringify([storedSession]),
+    )
+
+    const { result } = renderHook(() => useFocusSessions('local-preview', localGetToken))
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false))
+    expect(result.current.sessions).toEqual([storedSession])
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
   it('records a completed session after the server confirms it', async () => {
     const { result } = renderHook(() => useFocusSessions(ownerId, getToken))
     await waitFor(() => expect(result.current.isLoading).toBe(false))

@@ -30,6 +30,12 @@ export function useFocusSessions(storageOwnerId: string, getToken: GetToken) {
     setError(null)
 
     try {
+      const token = await getToken()
+      if (!token) {
+        setSessions(readLocalSessions(getFocusSessionsStorageKey(storageOwnerId)) ?? [])
+        return
+      }
+
       await migrateLocalSessions(storageOwnerId, getToken)
       setSessions(await getSessions(getToken))
     } catch {
