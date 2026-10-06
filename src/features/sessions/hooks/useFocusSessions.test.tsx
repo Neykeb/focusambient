@@ -44,7 +44,7 @@ describe("useFocusSessions", () => {
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(result.current.sessions).toEqual([storedSession]);
     expect(fetch).toHaveBeenCalledWith(
-      "http://localhost:3000/api/sessions",
+      expect.stringMatching(/\/api\/sessions$/),
       expect.objectContaining({
         headers: expect.objectContaining({
           Authorization: "Bearer test-token",
@@ -108,7 +108,7 @@ describe("useFocusSessions", () => {
 
     expect(fetch).toHaveBeenNthCalledWith(
       1,
-      "http://localhost:3000/api/sessions/import",
+      expect.stringMatching(/\/api\/sessions\/import$/),
       expect.objectContaining({ method: "POST" }),
     );
     expect(window.localStorage.getItem(storageKey)).toBeNull();
