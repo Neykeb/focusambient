@@ -48,8 +48,8 @@ Rate Limiting und ein JSON-Größenlimit sind im Backend eingerichtet.
 - localStorage
 - Vitest und Testing Library für automatische Prüfungen
 
-TanStack Query wird nicht verwendet. Nur abgeschlossene Sitzungen besitzen eine
-Serveranbindung. Timer, Audioeinstellungen, Gedanken und eigene Timer bleiben lokal.
+TanStack Query wird nicht verwendet. Abgeschlossene Sitzungen und Gedanken
+besitzen eine Serveranbindung. Timer, Audioeinstellungen und eigene Timer bleiben lokal.
 
 ## Daten und Sicherheit
 
@@ -57,7 +57,7 @@ Serveranbindung. Timer, Audioeinstellungen, Gedanken und eigene Timer bleiben lo
 - Die API prüft das Clerk-Token und übernimmt die Nutzer-ID nicht aus Eingaben.
 - Sitzungen werden serverseitig nach der geprüften Nutzer-ID getrennt.
 - Audioeinstellungen werden lokal im Browser gespeichert.
-- Gedanken werden nach Nutzer-ID getrennt im Browser gespeichert und mit Zod geprüft.
+- Gedanken werden nach Nutzer-ID getrennt in MongoDB gespeichert und mit Zod geprüft.
 - Gespeicherte Daten werden beim Laden mit Zod geprüft.
 - Beschädigte gespeicherte Daten werden sicher verworfen.
 - Clerk-Schlüssel werden über eine lokale Umgebungsdatei eingelesen.
@@ -127,7 +127,7 @@ Vor der Backend-Erweiterung bestanden in der lokalen Vorschau:
 - Klangqualität und Loop-Übergänge der MP3-Dateien mit Kopfhörern anhören
 - Clerk vor einer Veröffentlichung mit Produktionsschlüsseln erneut prüfen
 - Rate Limiting unter realer Produktionslast beobachten
-- Express-Backend vor einer öffentlichen Nutzung separat bereitstellen
+- Render-Backend und Gesundheitsprüfung vor der endgültigen Abgabe erneut aufrufen
 - in den GitHub-Pages-Einstellungen einmalig `GitHub Actions` als Quelle wählen
 
 
@@ -164,5 +164,6 @@ verstanden und erklärt werden.
 
 Aktueller Status: technisch bereit für die lokale Schulpräsentation.
 
-Vor einer öffentlichen Veröffentlichung bleiben die Clerk-Produktionskonfiguration
-und ein persönlicher Hörtest der Audiodateien erforderlich.
+Das Backend ist bei Render öffentlich bereitgestellt. Vor der endgültigen Abgabe
+bleiben die Clerk-Produktionskonfiguration und ein persönlicher Hörtest der
+Audiodateien zu kontrollieren.

@@ -7,6 +7,19 @@ und vollständig beendete Sitzungen über eine kleine Express-API gespeichert.
 Die Oberfläche ist dunkel, minimalistisch und für Desktop und Mobilgeräte
 geeignet.
 
+## Projektteam
+
+- Mohmmad Amiri
+
+## Live-Adressen
+
+- Frontend: https://neykeb.github.io/focusambient/
+- Backend-API: https://focusambient.onrender.com
+- Gesundheitsprüfung: https://focusambient.onrender.com/api/health
+
+Die Gesundheitsprüfung wurde am 14. Oktober 2026 über HTTPS aufgerufen und
+antwortete mit HTTP 200 und `{ "status": "ok" }`.
+
 ## Hauptfunktionen
 
 ### Fokus-Timer
@@ -42,6 +55,7 @@ geeignet.
 - offene Gedanken direkt unter dem Timer sehen
 - Gedanken als erledigt markieren oder löschen
 - alle gespeicherten Gedanken auf der Insights-Seite öffnen
+- Gedanken nach Clerk-Nutzer-ID getrennt in MongoDB speichern
 
 ## Verwendete Technik
 
@@ -133,6 +147,42 @@ Das Backend verwendet:
 Die API erlaubt höchstens 100 Anfragen pro IP-Adresse innerhalb von
 15 Minuten. Bei Überschreitung wird HTTP 429 zurückgegeben.
 
+### Sicherheitsentscheidungen
+
+- **Authentifizierung:** Clerk prüft das Sitzungstoken serverseitig. Die API
+  übernimmt die Benutzer-ID nicht aus dem Anfrageinhalt.
+- **Autorisierung:** Jede Datenbankabfrage verwendet zusätzlich die geprüfte
+  `ownerId`. Dadurch kann ein angemeldeter Benutzer keine Sitzungen oder
+  Gedanken eines anderen Benutzers lesen, ändern oder löschen.
+- **Validierung und Bereinigung:** Zod prüft alle API-Eingaben. Texte werden
+  getrimmt und besitzen feste Maximallängen. Mongoose prüft die Daten zusätzlich
+  vor dem Speichern.
+- **CORS:** Nur die in `FRONTEND_URL` festgelegte Webanwendung darf die API aus
+  einem Browser aufrufen.
+- **Rate Limiting:** Alle `/api`-Endpunkte erlauben höchstens 100 Anfragen pro
+  IP-Adresse in 15 Minuten.
+- **Größenlimit:** JSON-Anfragen sind auf 100 KB begrenzt.
+- **Fehlerbehandlung:** API-Clients erhalten allgemeine Fehlermeldungen, aber
+  keine Stacktraces, Datenbankdetails oder geheimen Werte.
+- **Geheimnisse:** Clerk- und MongoDB-Zugangsdaten werden ausschließlich über
+  Umgebungsvariablen bereitgestellt und nicht im Repository gespeichert.
+- **Transportverschlüsselung:** Die veröffentlichte Render-API verwendet HTTPS.
+
+Für diese API nicht beziehungsweise nur eingeschränkt relevant:
+
+- **Passwortspeicherung:** Die Anwendung speichert selbst keine Passwörter.
+  Registrierung, Anmeldung und sichere Passwortverarbeitung übernimmt Clerk.
+- **CSRF-Token:** Die API verwendet keine eigene Cookie-Sitzung. Clerk sendet
+  ein geprüftes Authentifizierungstoken. CORS beschränkt zusätzlich erlaubte
+  Browser-Ursprünge.
+- **Datei-Uploads:** Die API besitzt keine Upload-Endpunkte. Maßnahmen gegen
+  schädliche Uploads sind deshalb derzeit nicht erforderlich.
+- **HTML-Bereinigung:** Die API liefert ausschließlich JSON und rendert kein
+  übermitteltes HTML. Texte werden als normale Zeichenketten behandelt.
+- **Rollen und Administratorrechte:** Es gibt aktuell nur normale Benutzer mit
+  Zugriff auf ihre eigenen Daten. Ein rollenbasiertes Rechtesystem wäre erst
+  bei Administrator- oder Teamfunktionen notwendig.
+
 ## Verfügbare Befehle
 
 | Befehl | Aufgabe |
@@ -184,7 +234,7 @@ src/
     audio/              Audioanzeige, Hook, Engine und Daten
     auth/               Anmeldung und Routenschutz
     sessions/           Sitzungsverlauf
-    thoughts/           Gedankenablage und lokale Speicherung
+    thoughts/           Gedankenablage und API-Anbindung
     timer/              Timer, eigene Timer und Formulare
 
   routes/               Seiten der App
@@ -230,6 +280,9 @@ Vollständig abgeschlossene Fokus-Sitzungen liegen nach Clerk-Nutzer-ID getrennt
 in MongoDB. Vorhandene Browser-Sitzungen werden nach einer erfolgreichen Anmeldung
 einmalig übernommen. Eine vorhandene lokale Backend-JSON-Datei wird beim ersten
 MongoDB-Start ebenfalls importiert und danach nur noch als Backup behalten.
+
+Gedanken liegen ebenfalls nach Clerk-Nutzer-ID getrennt in MongoDB. Eigene Timer
+und Audioeinstellungen bleiben lokale Browserdaten.
 
 Wichtige Grenze:
 
@@ -285,7 +338,21 @@ Die API läuft lokal unter:
 http://localhost:3000
 ~~~
 
+Die veröffentlichte API läuft unter:
+
+~~~text
+https://focusambient.onrender.com
+~~~
+
 Geschützte Endpunkte benötigen eine gültige Clerk-Anmeldung.
+
+Das Frontend sendet das Clerk-Sitzungstoken automatisch. Bei einem direkten
+API-Aufruf wird es als Bearer-Token übertragen:
+
+~~~http
+Authorization: Bearer CLERK_SESSION_TOKEN
+Content-Type: application/json
+~~~
 
 ### Gesundheitsprüfung
 
@@ -320,6 +387,68 @@ Eine neue Sitzung enthält:
 }
 ~~~
 
+Beispiel für eine erfolgreiche Antwort:
+
+~~~http
+HTTP/2 201 Created
+Content-Type: application/json
+~~~
+
+~~~json
+{
+  "session": {
+    "id": "8f6f78d0-6d37-4dce-982d-d8e8142ba470",
+    "presetId": "pomodoro",
+    "label": "Pomodoro",
+    "durationSeconds": 1500,
+    "completedAt": "2026-10-14T08:30:00.000Z"
+  }
+}
+~~~
+
+`GET /api/sessions` antwortet mit:
+
+~~~json
+{
+  "sessions": [
+    {
+      "id": "8f6f78d0-6d37-4dce-982d-d8e8142ba470",
+      "presetId": "pomodoro",
+      "label": "Pomodoro",
+      "durationSeconds": 1500,
+      "completedAt": "2026-10-14T08:30:00.000Z"
+    }
+  ]
+}
+~~~
+
+`DELETE /api/sessions` antwortet nach erfolgreichem Löschen mit:
+
+~~~json
+{
+  "sessions": []
+}
+~~~
+
+Vorhandene Sitzungen werden mit `POST /api/sessions/import` importiert:
+
+~~~json
+{
+  "sessions": [
+    {
+      "id": "vorhandene-session-id",
+      "presetId": "pomodoro",
+      "label": "Pomodoro",
+      "durationSeconds": 1500,
+      "completedAt": "2026-10-13T12:00:00.000Z"
+    }
+  ]
+}
+~~~
+
+Die Antwort besitzt dieselbe Form wie `GET /api/sessions` und enthält den
+aktuellen, zusammengeführten Sitzungsverlauf.
+
 ### Gedanken
 
 | Methode | Adresse | Beschreibung |
@@ -340,6 +469,38 @@ Ein neuer Gedanke enthält:
 }
 ~~~
 
+Beispiel für eine erfolgreiche Antwort:
+
+~~~http
+HTTP/2 201 Created
+Content-Type: application/json
+~~~
+
+~~~json
+{
+  "thought": {
+    "sessionId": "session-id",
+    "id": "f529f4dc-318d-42f0-8f48-dd428e288b65",
+    "text": "Gedanke später bearbeiten",
+    "presetId": "pomodoro",
+    "presetLabel": "Pomodoro",
+    "isDone": false,
+    "createdAt": "2026-10-14T08:35:00.000Z"
+  }
+}
+~~~
+
+Der Erledigt-Status wird so geändert:
+
+~~~json
+{
+  "isDone": true
+}
+~~~
+
+Die erfolgreiche Antwort enthält den aktualisierten Gedanken im Feld
+`thought`. Erfolgreiches Löschen antwortet mit HTTP 204 ohne Inhalt.
+
 ### Fehlercodes
 
 - `400`: Ungültige Eingabedaten
@@ -347,6 +508,48 @@ Ein neuer Gedanke enthält:
 - `404`: Datensatz wurde nicht gefunden
 - `429`: Zu viele Anfragen
 - `500`: Interner Serverfehler
+
+Beispiele für Fehlerantworten:
+
+~~~http
+HTTP/2 400 Bad Request
+~~~
+
+~~~json
+{
+  "error": "Invalid thought data."
+}
+~~~
+
+~~~http
+HTTP/2 401 Unauthorized
+~~~
+
+~~~json
+{
+  "error": "Unauthorized"
+}
+~~~
+
+~~~http
+HTTP/2 404 Not Found
+~~~
+
+~~~json
+{
+  "error": "Thought not found."
+}
+~~~
+
+~~~http
+HTTP/2 429 Too Many Requests
+~~~
+
+~~~json
+{
+  "error": "Too many requests. Please try again later."
+}
+~~~
 
 Alle Sitzungen und Gedanken werden ausschließlich für den angemeldeten
 Benutzer verarbeitet. Die Benutzerzuordnung wird serverseitig aus der
@@ -400,9 +603,8 @@ Tests, TypeScript-Prüfung und Produktions-Build.
 
 ## Bekannte Grenzen
 
-- eigene Timer, Gedanken und Audioeinstellungen bleiben lokal im Browser.
+- eigene Timer und Audioeinstellungen bleiben lokal im Browser.
 - die Verfügbarkeit des Sitzungsverlaufs hängt von der MongoDB-Verbindung ab.
-- das Backend ist noch nicht veröffentlicht.
 - Clerk benötigt vor einer Veröffentlichung Produktionsschlüssel.
 - Klangqualität und Loop-Übergänge sollten vor einer Veröffentlichung persönlich
   mit Kopfhörern geprüft werden.
@@ -412,6 +614,7 @@ Tests, TypeScript-Prüfung und Produktions-Build.
 - [SPEC.md](./SPEC.md): Funktionen, Architektur und Abnahmekriterien
 - [AGENTS.md](./AGENTS.md): Arbeitsregeln für Coding-Agenten
 - [audit.md](./audit.md): geprüfter Stand, Entscheidungen und offene Aufgaben
+- [BACKEND_PLAN.md](./BACKEND_PLAN.md): API-Plan, Datenmodell und technische Entscheidungen
 - [public/audio/README.md](./public/audio/README.md): Audioquellen und Lizenz
 
 ## Veröffentlichung
@@ -420,8 +623,8 @@ Die App wird über GitHub Actions auf GitHub Pages veröffentlicht. Bei jedem
 Push auf `main` wird zuerst `npm run check` ausgeführt. Danach wird nur der
 fertige Ordner `dist` veröffentlicht.
 
-GitHub Pages veröffentlicht das Express-Backend nicht. Ohne separat betriebenes
-Backend ist der serverseitige Sitzungsverlauf in der veröffentlichten App nicht verfügbar.
+GitHub Pages veröffentlicht nur das Frontend. Das Express-Backend ist deshalb
+separat bei Render unter `https://focusambient.onrender.com` bereitgestellt.
 
 Einmalige Einstellung auf GitHub:
 

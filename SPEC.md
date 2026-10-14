@@ -110,9 +110,9 @@ Feature-spezifische Komponenten bleiben in ihrem Feature-Ordner.
 - echte Clerk-Schlüssel stehen nur in einer nicht versionierten lokalen Datei.
 - Dateien mit VITE-Präfix dürfen nur öffentliche Browserwerte enthalten.
 
-Gedanken, eigene Timer und Audioeinstellungen sind nicht geräteübergreifend
-verfügbar. Die Sitzungs-API prüft Clerk serverseitig und speichert ausschließlich
-vollständig abgeschlossene Sitzungen in MongoDB.
+Eigene Timer und Audioeinstellungen sind nicht geräteübergreifend verfügbar.
+Die API prüft Clerk serverseitig und speichert vollständig abgeschlossene
+Sitzungen sowie Gedanken nach Nutzer-ID getrennt in MongoDB.
 
 ## 7. Aktueller Stand
 
@@ -128,7 +128,7 @@ Bereits vereinfacht:
 ## 8. Veröffentlichung
 
 - GitHub Pages veröffentlicht nur den fertigen Produktions-Build aus `dist`.
-- Das Express-Backend wird nicht von GitHub Pages veröffentlicht.
+- Das Express-Backend wird getrennt bei Render veröffentlicht.
 - Der Build verwendet den Repository-Pfad `/focusambient/`.
 - GitHub Actions baut und veröffentlicht die App nach Änderungen auf `main`.
 - Direkte Seitenaufrufe werden auf die React-App zurückgeführt.
